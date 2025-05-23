@@ -81,7 +81,7 @@ const Home = () => {
         
         {/* Registration Form Section */}
         <section className="py-10 mb-20">
-          <div className="container mx-auto px-80  max-w-full">
+          <div className="container mx-auto px-4 max-w-2xl">
             <RegistrationForm />
           </div>
         </section>
@@ -89,7 +89,7 @@ const Home = () => {
       
       <footer className="bg-gray-100 py-6">
         <div className="container mx-auto px-4 text-center text-gray-600">
-          <p>&copy; {new Date().getFullYear()} Milgo Technology.  All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Milgo Technology. All rights reserved.</p>
         </div>
       </footer>
     </div>

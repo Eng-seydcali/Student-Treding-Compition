@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { FaTrophy, FaLock } from 'react-icons/fa'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
@@ -10,8 +10,14 @@ const AdminLogin = () => {
     password: ''
   })
   const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, isAuthenticated } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+
+  // If already authenticated, redirect to dashboard
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -36,7 +42,9 @@ const AdminLogin = () => {
       
       if (result.success) {
         toast.success('Login successful!')
-        navigate('/dashboard')
+        // Redirect to the page they were trying to access, or dashboard by default
+        const from = location.state?.from?.pathname || '/dashboard'
+        navigate(from, { replace: true })
       } else {
         toast.error(result.message || 'Invalid credentials')
       }
