@@ -384,7 +384,7 @@ const Dashboard = () => {
       {/* Image Modal */}
       {selectedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="relative max-w-4xl w-full bg-white rounded-lg overflow-hidden">
+          <div className="relative max-w-4xl w-full h-full bg-white rounded-lg overflow-hidden">
             <button
               onClick={() => setSelectedImage(null)}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"

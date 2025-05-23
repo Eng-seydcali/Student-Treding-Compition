@@ -40,7 +40,7 @@ router.post('/login', async (req, res) => {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, // 1 day
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax'
+      sameSite: 'none'
     })
     
     res.status(200).json({
@@ -69,7 +69,11 @@ router.get('/current', authMiddleware, async (req, res) => {
 
 // Logout
 router.post('/logout', (req, res) => {
-  res.clearCookie('token')
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'none'
+  })
   res.status(200).json({ success: true, message: 'Logged out successfully' })
 })
 
