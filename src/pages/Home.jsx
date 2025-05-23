@@ -105,7 +105,9 @@ const Home = () => {
       
       <footer className="bg-gray-100 py-6">
         <div className="container mx-auto px-4 text-center text-gray-600">
-          <p>&copy; {new Date().getFullYear()} Eng Cali. All rights reserved.</p>
+          
+           <p>&copy; {new Date().getFullYear()} Created by <a href="https://penn.so" target="_blank"
+            rel="noopener noreferrer" className="text-primary-500 hover:text-primary-600">Penn Creative Lab <span className='text-gray-600'>All rights reserved</span></a></p>
         </div>
       </footer>
     </div>
