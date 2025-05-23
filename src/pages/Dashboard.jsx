@@ -41,10 +41,18 @@ const Dashboard = () => {
     try {
       const [statsRes, submissionsRes] = await Promise.all([
         axios.get(`${import.meta.env.VITE_API_URL}/submissions/dashboard-stats`, { 
-          withCredentials: true 
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
         }),
         axios.get(`${import.meta.env.VITE_API_URL}/submissions?status=${filter}`, { 
-          withCredentials: true 
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
         })
       ])
       
@@ -68,7 +76,13 @@ const Dashboard = () => {
       const res = await axios.put(
         `${import.meta.env.VITE_API_URL}/submissions/${submissionId}/status`,
         { status: newStatus },
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
       )
       
       if (res.data.success) {
@@ -86,7 +100,13 @@ const Dashboard = () => {
       const res = await axios.put(
         `${import.meta.env.VITE_API_URL}/submissions/${submissionId}/winner`,
         { isWinner },
-        { withCredentials: true }
+        { 
+          withCredentials: true,
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        }
       )
       
       if (res.data.success) {
@@ -103,7 +123,11 @@ const Dashboard = () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/submissions/export`, {
         withCredentials: true,
-        responseType: 'blob'
+        responseType: 'blob',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        }
       })
       
       const url = window.URL.createObjectURL(new Blob([res.data]))
@@ -124,6 +148,11 @@ const Dashboard = () => {
   const handleLogout = async () => {
     await logout()
     toast.success('Logged out successfully')
+  }
+
+  const getFullImageUrl = (path) => {
+    if (path.startsWith('http')) return path
+    return `${import.meta.env.VITE_API_URL}${path}`
   }
 
   const filteredSubmissions = submissions.filter(submission => {
@@ -225,7 +254,7 @@ const Dashboard = () => {
           
           <button
             onClick={handleExportCSV}
-            className="btn-outline flex items-center   gap-2 whitespace-nowrap"
+            className="btn-outline flex items-center gap-2 whitespace-nowrap"
           >
             <FaDownload />
             Export CSV
@@ -294,14 +323,14 @@ const Dashboard = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">{submission.pocketOptionId}</div>
                       </td>
-                       <td className="px-6 py-4 whitespace-nowrap">
-                <button
-                  onClick={() => setSelectedImage(submission.screenshotUrl)}
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  <FaEye className="inline mr-1" /> View
-                </button>
-              </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <button 
+                          onClick={() => setSelectedImage(getFullImageUrl(submission.screenshotUrl))}
+                          className="text-primary-600 hover:text-primary-900"
+                        >
+                          <FaEye className="inline mr-1" /> View
+                        </button>
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                           ${submission.status === 'approved' ? 'bg-green-100 text-green-800' : 
@@ -355,7 +384,7 @@ const Dashboard = () => {
       {/* Image Modal */}
       {selectedImage && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="relative max-w-4xl w-full h-96 bg-white rounded-lg overflow-hidden">
+          <div className="relative max-w-4xl w-full bg-white rounded-lg overflow-hidden">
             <button
               onClick={() => setSelectedImage(null)}
               className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"

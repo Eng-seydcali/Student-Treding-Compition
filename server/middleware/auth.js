@@ -3,7 +3,8 @@ import User from '../models/User.js'
 
 export const authMiddleware = async (req, res, next) => {
   try {
-    const token = req.cookies.token
+    // Check for token in cookies or Authorization header
+    const token = req.cookies.token || req.headers.authorization?.split(' ')[1]
     
     if (!token) {
       return res.status(401).json({ success: false, message: 'Authentication required' })

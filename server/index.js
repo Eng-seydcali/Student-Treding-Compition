@@ -23,8 +23,10 @@ const PORT = process.env.PORT || 5000
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173',
-  credentials: true
+  origin: ['http://localhost:5173', 'https://student-trading-competition.netlify.app'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }))
 app.use(express.json())
 app.use(cookieParser())
@@ -56,7 +58,7 @@ app.get('/api/health', (req, res) => {
 })
 
 // Database connection
-mongoose.connect(process.env.MONGO_URI || 'mongodb+srv://milgo:2366@cluster0.u8hg6b7.mongodb.net/stuTreding?retryWrites=true&w=majority&appName=Cluster0')
+mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('Connected to MongoDB')
     // Create admin user if none exists
