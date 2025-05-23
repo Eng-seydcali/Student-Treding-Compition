@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import toast from 'react-hot-toast'
 import axios from 'axios'
@@ -11,8 +11,26 @@ const RegistrationForm = () => {
     pocketOptionId: '',
   })
   const [screenshot, setScreenshot] = useState(null)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [registered, setRegistered] = useState(false)
+  const [competitionActive, setCompetitionActive] = useState(false)
+
+  useEffect(() => {
+    const checkCompetitionStatus = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/competition/status`)
+        if (response.data.success) {
+          setCompetitionActive(response.data.isActive)
+        }
+      } catch (error) {
+        console.error('Error checking competition status:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkCompetitionStatus()
+  }, [])
 
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
@@ -71,6 +89,14 @@ const RegistrationForm = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (loading) {
+    return <div className="text-center py-4">Loading...</div>
+  }
+
+  if (!competitionActive) {
+    return null
   }
 
   if (registered) {
