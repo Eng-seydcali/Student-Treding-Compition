@@ -4,6 +4,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 import { useAuth } from '../context/AuthContext'
 import StatsCard from '../components/StatsCard'
+import CompetitionControl from '../components/CompetitionControl'
 import {
   FaUsers,
   FaCalendarAlt,

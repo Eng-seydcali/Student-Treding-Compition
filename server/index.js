@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 import authRoutes from './routes/auth.js'
 import userRoutes from './routes/users.js'
 import submissionRoutes from './routes/submissions.js'
+import competitionRoutes from './routes/competition.js'
 
 // Config
 dotenv.config()
@@ -51,6 +52,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 app.use('/api/auth', authRoutes)
 app.use('/api/users', userRoutes)
 app.use('/api/submissions', submissionRoutes)
+app.use('/api/competition', competitionRoutes)
 
 // Health check
 app.get('/api/health', (req, res) => {

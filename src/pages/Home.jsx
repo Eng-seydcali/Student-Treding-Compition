@@ -3,6 +3,7 @@ import axios from 'axios'
 import Header from '../components/Header'
 import RegistrationForm from '../components/RegistrationForm'
 import WinnersTable from '../components/WinnersTable'
+import CompetitionTimer from '../components/CompetitionTimer'
 import { FaUsers, FaClock, FaCheckCircle } from 'react-icons/fa'
 
 const Home = () => {
@@ -77,6 +78,13 @@ const Home = () => {
                 <div className="text-gray-600">Valid Submissions</div>
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* Competition Timer */}
+        <section className="py-10">
+          <div className="container mx-auto px-4 max-w-2xl">
+            <CompetitionTimer />
           </div>
         </section>
         
