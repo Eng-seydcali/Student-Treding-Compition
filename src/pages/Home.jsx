@@ -4,28 +4,65 @@ import Header from '../components/Header'
 import RegistrationForm from '../components/RegistrationForm'
 import WinnersTable from '../components/WinnersTable'
 import CompetitionTimer from '../components/CompetitionTimer'
-import { FaUsers, FaClock, FaCheckCircle } from 'react-icons/fa'
+import { FaUsers, FaCheckCircle } from 'react-icons/fa'
 
 const Home = () => {
   const [stats, setStats] = useState({
     participants: 0,
     validSubmissions: 0,
   })
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
+        setLoading(true)
+        setError(null)
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/submissions/stats`)
         if (response.data.success) {
           setStats(response.data.stats)
         }
       } catch (error) {
         console.error('Error fetching stats:', error)
+        setError('Failed to load statistics')
+      } finally {
+        setLoading(false)
       }
     }
 
     fetchStats()
+    
+    // Refresh stats every minute
+    const interval = setInterval(fetchStats, 60000)
+    return () => clearInterval(interval)
   }, [])
+
+  const renderStats = () => {
+    if (loading) {
+      return <div className="text-center py-4">Loading statistics...</div>
+    }
+
+    if (error) {
+      return <div className="text-center text-red-500 py-4">{error}</div>
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="card flex flex-col items-center text-center p-8">
+          <FaUsers className="text-primary-500 text-4xl mb-4" />
+          <div className="text-4xl font-bold mb-2">{stats.participants}</div>
+          <div className="text-gray-600">Total Participants</div>
+        </div>
+        
+        <div className="card flex flex-col items-center text-center p-8">
+          <FaCheckCircle className="text-success-500 text-4xl mb-4" />
+          <div className="text-4xl font-bold mb-2">{stats.validSubmissions}</div>
+          <div className="text-gray-600">Valid Submissions</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -33,7 +70,7 @@ const Home = () => {
       
       <main className="flex-1">
         {/* Hero Section */}
-        <section className="bg-primary-500 text-white py-4 m-5 rounded-3xl ">
+        <section className="bg-primary-500 text-white py-4 m-5 rounded-3xl">
           <div className="container mx-auto px-4 text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               🎉 Win Amazing Prizes!
@@ -56,35 +93,17 @@ const Home = () => {
           </div>
         </section>
         
-        {/* Stats Section */}
-        <section className="py-3">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="card flex flex-col items-center text-center p-8">
-                <FaUsers className="text-primary-500 text-4xl mb-4" />
-                <div className="text-4xl font-bold mb-2">{stats.participants}</div>
-                <div className="text-gray-600">Total Participants</div>
-              </div>
-              
-              <div className="card flex flex-col items-center text-center p-8">
-                <FaClock className="text-warning-500 text-4xl mb-4" />
-                <div className="text-xl font-bold mb-2">Time Remaining</div>
-                <div className="text-gray-600">Competition in progress</div>
-              </div>
-              
-              <div className="card flex flex-col items-center text-center p-8">
-                <FaCheckCircle className="text-success-500 text-4xl mb-4" />
-                <div className="text-4xl font-bold mb-2">{stats.validSubmissions}</div>
-                <div className="text-gray-600">Valid Submissions</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Competition Timer */}
         <section className="py-10">
           <div className="container mx-auto px-4 max-w-2xl">
             <CompetitionTimer />
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="py-3">
+          <div className="container mx-auto px-4">
+            {renderStats()}
           </div>
         </section>
         
@@ -105,8 +124,7 @@ const Home = () => {
       
       <footer className="bg-gray-100 py-6">
         <div className="container mx-auto px-4 text-center text-gray-600">
-          
-           <p>&copy; {new Date().getFullYear()} Created by <a href="https://penn.so" target="_blank"
+          <p>&copy; {new Date().getFullYear()} Created by <a href="https://penn.so" target="_blank"
             rel="noopener noreferrer" className="text-primary-500 hover:text-primary-600">Penn Creative Lab <span className='text-gray-600'>All rights reserved</span></a></p>
         </div>
       </footer>

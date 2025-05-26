@@ -46,9 +46,6 @@ const WinnersTable = () => {
                 Name
               </th>
               <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                Telegram Username
-              </th>
-              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 Date
               </th>
             </tr>
@@ -61,9 +58,6 @@ const WinnersTable = () => {
                     <FaCrown className="text-yellow-500 mr-2" />
                     <div className="text-sm font-medium text-gray-900">{winner.fullName}</div>
                   </div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-500">{winner.telegramUsername}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {new Date(winner.createdAt).toLocaleDateString()}

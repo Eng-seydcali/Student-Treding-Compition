@@ -8,18 +8,41 @@ const router = express.Router()
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Public stats for homepage
+// Public stats for homepage - Add caching
+let statsCache = {
+  data: null,
+  timestamp: 0
+}
+
+const CACHE_DURATION = 60000 // 1 minute cache
+
 router.get('/stats', async (req, res) => {
   try {
-    const participants = await Submission.countDocuments()
-    const validSubmissions = await Submission.countDocuments({ status: 'approved' })
+    const now = Date.now()
+    
+    // Return cached data if valid
+    if (statsCache.data && (now - statsCache.timestamp) < CACHE_DURATION) {
+      return res.status(200).json({
+        success: true,
+        stats: statsCache.data
+      })
+    }
+
+    // If no cache or expired, fetch new data
+    const [participants, validSubmissions] = await Promise.all([
+      Submission.countDocuments().lean(),
+      Submission.countDocuments({ status: 'approved' }).lean()
+    ])
+    
+    // Update cache
+    statsCache = {
+      data: { participants, validSubmissions },
+      timestamp: now
+    }
     
     res.status(200).json({
       success: true,
-      stats: {
-        participants,
-        validSubmissions
-      }
+      stats: statsCache.data
     })
   } catch (error) {
     console.error('Get stats error:', error)
@@ -27,24 +50,42 @@ router.get('/stats', async (req, res) => {
   }
 })
 
-// Dashboard stats for admin
+// Dashboard stats for admin - Add caching
+let dashboardStatsCache = {
+  data: null,
+  timestamp: 0
+}
+
 router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   try {
-    const total = await Submission.countDocuments()
-    const pending = await Submission.countDocuments({ status: 'pending' })
-    const approved = await Submission.countDocuments({ status: 'approved' })
-    const rejected = await Submission.countDocuments({ status: 'rejected' })
-    const winners = await Submission.countDocuments({ isWinner: true })
+    const now = Date.now()
+    
+    // Return cached data if valid
+    if (dashboardStatsCache.data && (now - dashboardStatsCache.timestamp) < CACHE_DURATION) {
+      return res.status(200).json({
+        success: true,
+        stats: dashboardStatsCache.data
+      })
+    }
+
+    // If no cache or expired, fetch new data using Promise.all for parallel execution
+    const [total, pending, approved, rejected, winners] = await Promise.all([
+      Submission.countDocuments().lean(),
+      Submission.countDocuments({ status: 'pending' }).lean(),
+      Submission.countDocuments({ status: 'approved' }).lean(),
+      Submission.countDocuments({ status: 'rejected' }).lean(),
+      Submission.countDocuments({ isWinner: true }).lean()
+    ])
+    
+    // Update cache
+    dashboardStatsCache = {
+      data: { total, pending, approved, rejected, winners },
+      timestamp: now
+    }
     
     res.status(200).json({
       success: true,
-      stats: {
-        total,
-        pending,
-        approved,
-        rejected,
-        winners
-      }
+      stats: dashboardStatsCache.data
     })
   } catch (error) {
     console.error('Get dashboard stats error:', error)
@@ -52,10 +93,29 @@ router.get('/dashboard-stats', authMiddleware, async (req, res) => {
   }
 })
 
-// Get all submissions - admin only
+// Delete all submissions - admin only
+router.delete('/all', authMiddleware, adminMiddleware, async (req, res) => {
+  try {
+    await Submission.deleteMany({})
+    
+    // Clear caches
+    statsCache = { data: null, timestamp: 0 }
+    dashboardStatsCache = { data: null, timestamp: 0 }
+    
+    res.status(200).json({ 
+      success: true, 
+      message: 'All submissions deleted successfully' 
+    })
+  } catch (error) {
+    console.error('Delete all submissions error:', error)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+})
+
+// Get all submissions - Add pagination and lean queries
 router.get('/', authMiddleware, async (req, res) => {
   try {
-    const { status } = req.query
+    const { status, page = 1, limit = 50 } = req.query
     let query = {}
     
     if (status && status !== 'all') {
@@ -66,7 +126,11 @@ router.get('/', authMiddleware, async (req, res) => {
       }
     }
     
-    const submissions = await Submission.find(query).sort({ createdAt: -1 })
+    const submissions = await Submission.find(query)
+      .lean()
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
     
     res.status(200).json({ success: true, submissions })
   } catch (error) {
@@ -115,6 +179,10 @@ router.post('/', async (req, res) => {
     
     await submission.save()
     
+    // Clear caches
+    statsCache = { data: null, timestamp: 0 }
+    dashboardStatsCache = { data: null, timestamp: 0 }
+    
     res.status(201).json({ success: true, submission })
   } catch (error) {
     console.error('Create submission error:', error)
@@ -141,6 +209,10 @@ router.put('/:id/status', authMiddleware, async (req, res) => {
     submission.status = status
     await submission.save()
     
+    // Clear caches
+    statsCache = { data: null, timestamp: 0 }
+    dashboardStatsCache = { data: null, timestamp: 0 }
+    
     res.status(200).json({ success: true, submission })
   } catch (error) {
     console.error('Update submission status error:', error)
@@ -161,6 +233,10 @@ router.put('/:id/winner', authMiddleware, adminMiddleware, async (req, res) => {
     
     submission.isWinner = isWinner
     await submission.save()
+    
+    // Clear caches
+    statsCache = { data: null, timestamp: 0 }
+    dashboardStatsCache = { data: null, timestamp: 0 }
     
     res.status(200).json({ success: true, submission })
   } catch (error) {
