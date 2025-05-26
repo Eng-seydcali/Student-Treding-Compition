@@ -55,6 +55,7 @@ const Home = () => {
           <div className="text-gray-600">Total Participants</div>
         </div>
         
+        
         <div className="card flex flex-col items-center text-center p-8">
           <FaCheckCircle className="text-success-500 text-4xl mb-4" />
           <div className="text-4xl font-bold mb-2">{stats.validSubmissions}</div>
@@ -93,17 +94,18 @@ const Home = () => {
           </div>
         </section>
         
-        {/* Competition Timer */}
-        <section className="py-10">
-          <div className="container mx-auto px-4 max-w-2xl">
-            <CompetitionTimer />
-          </div>
-        </section>
+   
 
         {/* Stats Section */}
         <section className="py-3">
           <div className="container mx-auto px-4">
             {renderStats()}
+          </div>
+        </section>
+               {/* Competition Timer */}
+        <section className="py-10">
+          <div className="container mx-auto px-4 max-w-2xl">
+            <CompetitionTimer />
           </div>
         </section>
         
