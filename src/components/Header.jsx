@@ -6,7 +6,7 @@ const Header = () => {
   const { isAuthenticated, user } = useAuth()
 
   return (
-    <header className="bg-white shadow-sm py-4">
+    <header className="bg-white shadow-lg  py-4">
       <div className="container mx-auto px-4 flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2 text-2xl font-bold text-gray-900">
           <FaTrophy className="text-primary-500" />
