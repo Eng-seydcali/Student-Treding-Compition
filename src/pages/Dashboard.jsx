@@ -67,10 +67,12 @@ const Dashboard = () => {
     }
     
     try {
-      const response = await axios.delete(
-        `${import.meta.env.VITE_API_URL}/submissions/all`,
-        { withCredentials: true }
-      )
+axios.get(`${import.meta.env.VITE_API_URL}/submissions`, {
+  params: { status: 'all' },
+  withCredentials: true   // muhiim si cookie ama token loo diro
+})
+
+
       
       if (response.data.success) {
         toast.success('All submissions deleted successfully')

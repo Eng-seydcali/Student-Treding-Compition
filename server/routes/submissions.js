@@ -14,7 +14,41 @@ let statsCache = {
   timestamp: 0
 }
 
-const CACHE_DURATION = 60000 // 1 minute cache
+const CACHE_DURATION = 10000 // 1 minute cache
+
+// Get submissions with optional filtering and pagination - admin only
+router.get('/', authMiddleware, async (req, res) => {
+  try {
+    const { status, page = 1, limit = 50 } = req.query
+    let query = {}
+
+    if (status && status !== 'all') {
+      if (status === 'winner') {
+        query.isWinner = true
+      } else {
+        query.status = status
+      }
+    }
+
+    const submissions = await Submission.find(query)
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit))
+      .lean()
+
+    const total = await Submission.countDocuments(query)
+
+    res.status(200).json({
+      success: true,
+      submissions,
+      total
+    })
+  } catch (error) {
+    console.error('Fetch submissions error:', error)
+    res.status(500).json({ success: false, message: 'Server error' })
+  }
+})
+
 
 router.get('/stats', async (req, res) => {
   try {
