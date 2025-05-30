@@ -54,7 +54,7 @@ const RegistrationForm = () => {
     e.preventDefault()
     
     if (!formData.fullName || !formData.telegramUsername || !formData.pocketOptionId || !screenshot) {
-      toast.error('Please fill all fields and upload a screenshot')
+      toast.error('fadlan soo gali sawirka screenshot ka ah ')
       return
     }
 
