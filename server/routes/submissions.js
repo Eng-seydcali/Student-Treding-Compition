@@ -113,31 +113,16 @@ router.delete('/all', authMiddleware, adminMiddleware, async (req, res) => {
 })
 
 // Get all submissions - Add pagination and lean queries
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/winners', async (req, res) => {
   try {
-    const { status, page = 1, limit = 50 } = req.query
-    let query = {}
-    
-    if (status && status !== 'all') {
-      if (status === 'winner') {
-        query.isWinner = true
-      } else {
-        query.status = status
-      }
-    }
-    
-    const submissions = await Submission.find(query)
-      .lean()
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-    
-    res.status(200).json({ success: true, submissions })
-  } catch (error) {
-    console.error('Get submissions error:', error)
-    res.status(500).json({ success: false, message: 'Server error' })
+    const winners = await Submission.find({ isWinner: true, status: 'approved' }).sort({ createdAt: -1 })
+    res.json({ success: true, submissions: winners })
+  } catch (err) {
+    console.error(err)
+    res.status(500).json({ success: false, message: 'Failed to fetch winners' })
   }
 })
+
 
 // Create submission - public
 router.post('/', async (req, res) => {
@@ -195,24 +180,27 @@ router.put('/:id/status', authMiddleware, async (req, res) => {
   try {
     const { status } = req.body
     const submissionId = req.params.id
-    
+
     // Validate status
     if (!['pending', 'approved', 'rejected'].includes(status)) {
       return res.status(400).json({ success: false, message: 'Invalid status' })
     }
-    
-    const submission = await Submission.findById(submissionId)
+
+    // Update status directly with findByIdAndUpdate
+    const submission = await Submission.findByIdAndUpdate(
+      submissionId,
+      { status },
+      { new: true, runValidators: false }
+    )
+
     if (!submission) {
       return res.status(404).json({ success: false, message: 'Submission not found' })
     }
-    
-    submission.status = status
-    await submission.save()
-    
+
     // Clear caches
     statsCache = { data: null, timestamp: 0 }
     dashboardStatsCache = { data: null, timestamp: 0 }
-    
+
     res.status(200).json({ success: true, submission })
   } catch (error) {
     console.error('Update submission status error:', error)
@@ -225,25 +213,29 @@ router.put('/:id/winner', authMiddleware, adminMiddleware, async (req, res) => {
   try {
     const { isWinner } = req.body
     const submissionId = req.params.id
-    
-    const submission = await Submission.findById(submissionId)
+
+    // Update isWinner directly with findByIdAndUpdate
+    const submission = await Submission.findByIdAndUpdate(
+      submissionId,
+      { isWinner },
+      { new: true, runValidators: false }
+    )
+
     if (!submission) {
       return res.status(404).json({ success: false, message: 'Submission not found' })
     }
-    
-    submission.isWinner = isWinner
-    await submission.save()
-    
+
     // Clear caches
     statsCache = { data: null, timestamp: 0 }
     dashboardStatsCache = { data: null, timestamp: 0 }
-    
+
     res.status(200).json({ success: true, submission })
   } catch (error) {
     console.error('Update winner status error:', error)
     res.status(500).json({ success: false, message: 'Server error' })
   }
 })
+
 
 // Export submissions as CSV - admin only
 router.get('/export', authMiddleware, adminMiddleware, async (req, res) => {

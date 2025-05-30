@@ -16,11 +16,18 @@ const WinnersTable = () => {
       try {
         setLoading(true)
         setError(null)
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/submissions?status=winner`, {
-          signal: controller.signal
-        })
+        // Add withCredentials to fix 401 errors
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/submissions/winners`, {
+  signal: controller.signal
+})
+
+        
         if (isMounted && response.data.success) {
-          setWinners(response.data.submissions.filter(sub => sub.isWinner))
+          // Filter winners after fetching all submissions
+          const winnersList = response.data.submissions.filter(sub => 
+            sub.isWinner && sub.status === 'approved'
+          )
+          setWinners(winnersList)
         }
       } catch (error) {
         if (error.name === 'AbortError') return
@@ -36,7 +43,7 @@ const WinnersTable = () => {
     }
 
     fetchWinners()
-    const interval = setInterval(fetchWinners, 30000) // Check every 30 seconds
+    const interval = setInterval(fetchWinners, 30000)
     
     return () => {
       isMounted = false

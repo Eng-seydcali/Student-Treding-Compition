@@ -82,41 +82,53 @@ const Dashboard = () => {
     }
   }
 
-  const handleStatusChange = async (submissionId, newStatus) => {
-    try {
-      const res = await axios.put(
-        `${import.meta.env.VITE_API_URL}/submissions/${submissionId}/status`,
-        { status: newStatus },
-        { withCredentials: true }
-      )
-      
-      if (res.data.success) {
-        toast.success(`Submission marked as ${newStatus}`)
-        fetchDashboardData()
-      }
-    } catch (error) {
-      console.error('Error updating submission status:', error)
-      toast.error('Failed to update submission')
+const handleStatusChange = async (submissionId, newStatus) => {
+  try {
+    const res = await axios.put(
+      `${import.meta.env.VITE_API_URL}/submissions/${submissionId}/status`,
+      { status: newStatus },
+      { withCredentials: true }
+    )
+    
+    if (res.data.success) {
+      toast.success(`Submission marked as ${newStatus}`)
+      fetchDashboardData()
     }
+  } catch (error) {
+    console.error('Error updating submission status:', error)
+    toast.error('Failed to update submission')
   }
+}
 
-  const handleWinnerToggle = async (submissionId, isWinner) => {
-    try {
-      const res = await axios.put(
-        `${import.meta.env.VITE_API_URL}/submissions/${submissionId}/winner`,
-        { isWinner },
+
+ const handleWinnerToggle = async (submissionId, isWinner) => {
+  try {
+    // First ensure the submission is approved before marking as winner
+    if (isWinner) {
+      await axios.put(
+        `${import.meta.env.VITE_API_URL}/submissions/${submissionId}/status`,
+        { status: 'approved' },
         { withCredentials: true }
       )
-      
-      if (res.data.success) {
-        toast.success(isWinner ? 'Marked as winner' : 'Removed from winners')
-        fetchDashboardData()
-      }
-    } catch (error) {
-      console.error('Error updating winner status:', error)
-      toast.error('Failed to update winner status')
     }
+
+    // Then update winner status
+    const res = await axios.put(
+      `${import.meta.env.VITE_API_URL}/submissions/${submissionId}/winner`,
+      { isWinner },
+      { withCredentials: true }
+    )
+    
+    if (res.data.success) {
+      toast.success(isWinner ? 'Marked as winner' : 'Removed from winners')
+      fetchDashboardData()
+    }
+  } catch (error) {
+    console.error('Error updating winner status:', error)
+    toast.error('Failed to update winner status')
   }
+}
+
 
   const handleExportCSV = async () => {
     try {
