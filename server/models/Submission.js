@@ -6,7 +6,7 @@ const submissionSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  telegramUsername: {
+  phoneNumber: {
     type: String,
     required: true,
     trim: true

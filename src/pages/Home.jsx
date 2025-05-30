@@ -5,6 +5,7 @@ import RegistrationForm from '../components/RegistrationForm'
 import WinnersTable from '../components/WinnersTable'
 import CompetitionTimer from '../components/CompetitionTimer'
 import { FaUsers, FaCheckCircle } from 'react-icons/fa'
+import LoadingSkeleton from '../components/LoadingSkeleton'
 
 const Home = () => {
   const [stats, setStats] = useState({
@@ -15,36 +16,64 @@ const Home = () => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
     const fetchStats = async () => {
       try {
         setLoading(true)
         setError(null)
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/submissions/stats`)
-        if (response.data.success) {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/submissions/stats`, {
+          signal: controller.signal
+        })
+        if (isMounted && response.data.success) {
           setStats(response.data.stats)
         }
       } catch (error) {
+        if (error.name === 'AbortError') return
         console.error('Error fetching stats:', error)
-        setError('Failed to load statistics')
+        if (isMounted) {
+          setError('Failed to load statistics')
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchStats()
+    const interval = setInterval(fetchStats, 30000) // Reduced to 30 seconds for more frequent updates
     
-    // Refresh stats every minute
-    const interval = setInterval(fetchStats, 60000)
-    return () => clearInterval(interval)
+    return () => {
+      isMounted = false
+      controller.abort()
+      clearInterval(interval)
+    }
   }, [])
 
   const renderStats = () => {
     if (loading) {
-      return <div className="text-center py-4">Loading statistics...</div>
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <LoadingSkeleton />
+          <LoadingSkeleton />
+        </div>
+      )
     }
 
     if (error) {
-      return <div className="text-center text-red-500 py-4">{error}</div>
+      return (
+        <div className="text-center py-8 bg-red-50 rounded-lg">
+          <p className="text-red-600">{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      )
     }
 
     return (
@@ -54,7 +83,6 @@ const Home = () => {
           <div className="text-4xl font-bold mb-2">{stats.participants}</div>
           <div className="text-gray-600">Total Participants</div>
         </div>
-        
         
         <div className="card flex flex-col items-center text-center p-8">
           <FaCheckCircle className="text-success-500 text-4xl mb-4" />
@@ -93,8 +121,6 @@ const Home = () => {
             </div>
           </div>
         </section>
-        
-   
 
         {/* Stats Section */}
         <section className="py-3">
@@ -102,7 +128,8 @@ const Home = () => {
             {renderStats()}
           </div>
         </section>
-               {/* Competition Timer */}
+
+        {/* Competition Timer */}
         <section className="py-10">
           <div className="container mx-auto px-4 max-w-2xl">
             <CompetitionTimer />

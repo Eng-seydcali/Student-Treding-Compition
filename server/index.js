@@ -45,7 +45,7 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true })
 }
 
-// Serve uploaded files
+// Serve uploaded files - Make uploads directory publicly accessible
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')))
 
 // API routes

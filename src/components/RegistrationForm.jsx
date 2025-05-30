@@ -7,7 +7,7 @@ import { FaCloudUploadAlt } from 'react-icons/fa'
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
     fullName: '',
-    telegramUsername: '',
+    phoneNumber: '',
     pocketOptionId: '',
   })
   const [screenshot, setScreenshot] = useState(null)
@@ -53,7 +53,7 @@ const RegistrationForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     
-    if (!formData.fullName || !formData.telegramUsername || !formData.pocketOptionId || !screenshot) {
+    if (!formData.fullName || !formData.phoneNumber || !formData.pocketOptionId || !screenshot) {
       toast.error('fadlan soo gali sawirka screenshot ka ah ')
       return
     }
@@ -63,7 +63,7 @@ const RegistrationForm = () => {
     try {
       const submitData = new FormData()
       submitData.append('fullName', formData.fullName)
-      submitData.append('telegramUsername', formData.telegramUsername)
+      submitData.append('phoneNumber', formData.phoneNumber)
       submitData.append('pocketOptionId', formData.pocketOptionId)
       submitData.append('screenshot', screenshot)
 
@@ -78,7 +78,7 @@ const RegistrationForm = () => {
         setRegistered(true)
         setFormData({
           fullName: '',
-          telegramUsername: '',
+          phoneNumber: '',
           pocketOptionId: '',
         })
         setScreenshot(null)
@@ -142,16 +142,16 @@ const RegistrationForm = () => {
         </div>
 
         <div className="mb-4">
-          <label htmlFor="telegramUsername" className="input-label">
-            Telegram Username <span className="text-red-500">*</span>
+          <label htmlFor="phoneNumber" className="input-label">
+            Phone Number <span className="text-red-500">*</span>
           </label>
           <input
-            type="text"
-            id="telegramUsername"
-            name="telegramUsername"
-            placeholder="@username"
+            type="tel"
+            id="phoneNumber"
+            name="phoneNumber"
+            placeholder="Enter your phone number"
             className="input-field"
-            value={formData.telegramUsername}
+            value={formData.phoneNumber}
             onChange={handleChange}
             required
           />
@@ -210,8 +210,8 @@ const RegistrationForm = () => {
         >
           {loading ? (
             <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white\" xmlns="http://www.w3.org/2000/svg\" fill="none\" viewBox="0 0 24 24">
+                <circle className="opacity-25\" cx="12\" cy="12\" r="10\" stroke="currentColor\" strokeWidth="4"></circle>
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
               Processing...
@@ -222,5 +222,4 @@ const RegistrationForm = () => {
     </div>
   )
 }
-
 export default RegistrationForm

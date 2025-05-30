@@ -142,10 +142,10 @@ router.get('/', authMiddleware, async (req, res) => {
 // Create submission - public
 router.post('/', async (req, res) => {
   try {
-    const { fullName, telegramUsername, pocketOptionId } = req.body
+    const { fullName, phoneNumber, pocketOptionId } = req.body
     
     // Validate input
-    if (!fullName || !telegramUsername || !pocketOptionId) {
+    if (!fullName || !phoneNumber || !pocketOptionId) {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' })
     }
     
@@ -169,10 +169,10 @@ router.post('/', async (req, res) => {
     // Move file to uploads directory
     await screenshot.mv(uploadPath)
     
-    // Create submission
+    // Create submission with relative path
     const submission = new Submission({
       fullName,
-      telegramUsername,
+      phoneNumber,
       pocketOptionId,
       screenshotUrl: `/uploads/${filename}`
     })
@@ -251,13 +251,13 @@ router.get('/export', authMiddleware, adminMiddleware, async (req, res) => {
     const submissions = await Submission.find().sort({ createdAt: -1 })
     
     // Create CSV header
-    let csv = 'Full Name,Telegram Username,Pocket Option ID,Status,Winner,Submission Date\n'
+    let csv = 'Full Name,Phone Number,Pocket Option ID,Status,Winner,Submission Date\n'
     
     // Add rows
     submissions.forEach(submission => {
       const row = [
         `"${submission.fullName}"`,
-        `"${submission.telegramUsername}"`,
+        `"${submission.phoneNumber}"`,
         `"${submission.pocketOptionId}"`,
         `"${submission.status}"`,
         `"${submission.isWinner ? 'Yes' : 'No'}"`,

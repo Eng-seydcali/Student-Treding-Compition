@@ -1,30 +1,76 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { FaCrown } from 'react-icons/fa'
+import LoadingSkeleton from './LoadingSkeleton'
 
 const WinnersTable = () => {
   const [winners, setWinners] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
     const fetchWinners = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/submissions?status=winner`)
-        if (response.data.success) {
+        setLoading(true)
+        setError(null)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/submissions?status=winner`, {
+          signal: controller.signal
+        })
+        if (isMounted && response.data.success) {
           setWinners(response.data.submissions.filter(sub => sub.isWinner))
         }
       } catch (error) {
+        if (error.name === 'AbortError') return
         console.error('Error fetching winners:', error)
+        if (isMounted) {
+          setError('Failed to load winners')
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
 
     fetchWinners()
+    const interval = setInterval(fetchWinners, 30000) // Check every 30 seconds
+    
+    return () => {
+      isMounted = false
+      controller.abort()
+      clearInterval(interval)
+    }
   }, [])
 
   if (loading) {
-    return <div className="text-center py-8">Loading winners...</div>
+    return (
+      <div className="bg-white shadow-card rounded-lg p-6 mb-10">
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <FaCrown className="text-yellow-500 text-2xl" />
+          <h2 className="text-2xl font-bold text-center">Competition Winners</h2>
+        </div>
+        <LoadingSkeleton />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="bg-white shadow-card rounded-lg p-6 mb-10">
+        <div className="text-center text-red-600">
+          <p>{error}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
   }
 
   if (winners.length === 0) {

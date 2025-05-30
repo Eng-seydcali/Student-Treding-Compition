@@ -1,16 +1,27 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
-import { FaClock } from 'react-icons/fa'
+import { FaClock, FaExclamationTriangle } from 'react-icons/fa'
+import LoadingSkeleton from './LoadingSkeleton'
 
 const CompetitionTimer = () => {
   const [timeLeft, setTimeLeft] = useState(null)
   const [status, setStatus] = useState('loading')
   const [endTime, setEndTime] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
+    let isMounted = true
+    const controller = new AbortController()
+
     const fetchStatus = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/competition/status`)
+        setStatus('loading')
+        setError(null)
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/competition/status`, {
+          signal: controller.signal
+        })
+        if (!isMounted) return
+
         if (response.data.success) {
           if (!response.data.isActive) {
             setStatus('closed')
@@ -22,14 +33,23 @@ const CompetitionTimer = () => {
           setStatus('active')
         }
       } catch (error) {
+        if (error.name === 'AbortError') return
         console.error('Error fetching competition status:', error)
-        setStatus('error')
+        if (isMounted) {
+          setError('Failed to load competition status')
+          setStatus('error')
+        }
       }
     }
 
     fetchStatus()
-    const interval = setInterval(fetchStatus, 60000) // Check every minute
-    return () => clearInterval(interval)
+    const statusInterval = setInterval(fetchStatus, 30000) // Check every 30 seconds
+
+    return () => {
+      isMounted = false
+      controller.abort()
+      clearInterval(statusInterval)
+    }
   }, [])
 
   useEffect(() => {
@@ -53,16 +73,31 @@ const CompetitionTimer = () => {
     }
 
     updateTimer()
-    const interval = setInterval(updateTimer, 1000)
-    return () => clearInterval(interval)
+    const timerInterval = setInterval(updateTimer, 1000)
+    return () => clearInterval(timerInterval)
   }, [endTime])
 
   if (status === 'loading') {
-    return <div className="text-center py-4">Loading...</div>
+    return (
+      <div className="bg-primary-50 border border-primary-200 rounded-lg p-6 text-center mb-6">
+        <LoadingSkeleton />
+      </div>
+    )
   }
 
   if (status === 'error') {
-    return <div className="text-center text-red-500 py-4">Error loading competition status</div>
+    return (
+      <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center mb-6">
+        <FaExclamationTriangle className="text-red-500 text-3xl mx-auto mb-4" />
+        <p className="text-red-600 mb-4">{error}</p>
+        <button 
+          onClick={() => window.location.reload()}
+          className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+        >
+          Retry
+        </button>
+      </div>
+    )
   }
 
   if (status === 'closed') {

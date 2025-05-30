@@ -1,6 +1,11 @@
 import PropTypes from 'prop-types'
+import LoadingSkeleton from './LoadingSkeleton'
 
-const StatsCard = ({ icon, count, label, bgColor = 'bg-blue-50' }) => {
+const StatsCard = ({ icon, count, label, bgColor = 'bg-blue-50', loading = false }) => {
+  if (loading) {
+    return <LoadingSkeleton />
+  }
+
   return (
     <div className="card flex flex-col items-center justify-center py-6">
       <div className={`${bgColor} p-3 rounded-full mb-3`}>
@@ -16,7 +21,8 @@ StatsCard.propTypes = {
   icon: PropTypes.node.isRequired,
   count: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
   label: PropTypes.string.isRequired,
-  bgColor: PropTypes.string
+  bgColor: PropTypes.string,
+  loading: PropTypes.bool
 }
 
 export default StatsCard

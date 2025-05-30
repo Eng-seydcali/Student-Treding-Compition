@@ -42,20 +42,8 @@ const Dashboard = () => {
     setLoading(true)
     try {
       const [statsRes, submissionsRes] = await Promise.all([
-        axios.get(`${import.meta.env.VITE_API_URL}/submissions/dashboard-stats`, { 
-          withCredentials: true,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }),
-        axios.get(`${import.meta.env.VITE_API_URL}/submissions?status=${filter}`, { 
-          withCredentials: true,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        })
+        axios.get(`${import.meta.env.VITE_API_URL}/submissions/dashboard-stats`, { withCredentials: true }),
+        axios.get(`${import.meta.env.VITE_API_URL}/submissions?status=${filter}`, { withCredentials: true })
       ])
       
       if (statsRes.data.success) {
@@ -81,13 +69,7 @@ const Dashboard = () => {
     try {
       const response = await axios.delete(
         `${import.meta.env.VITE_API_URL}/submissions/all`,
-        { 
-          withCredentials: true,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }
+        { withCredentials: true }
       )
       
       if (response.data.success) {
@@ -105,13 +87,7 @@ const Dashboard = () => {
       const res = await axios.put(
         `${import.meta.env.VITE_API_URL}/submissions/${submissionId}/status`,
         { status: newStatus },
-        { 
-          withCredentials: true,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }
+        { withCredentials: true }
       )
       
       if (res.data.success) {
@@ -129,13 +105,7 @@ const Dashboard = () => {
       const res = await axios.put(
         `${import.meta.env.VITE_API_URL}/submissions/${submissionId}/winner`,
         { isWinner },
-        { 
-          withCredentials: true,
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }
+        { withCredentials: true }
       )
       
       if (res.data.success) {
@@ -152,11 +122,7 @@ const Dashboard = () => {
     try {
       const res = await axios.get(`${import.meta.env.VITE_API_URL}/submissions/export`, {
         withCredentials: true,
-        responseType: 'blob',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        }
+        responseType: 'blob'
       })
       
       const url = window.URL.createObjectURL(new Blob([res.data]))
@@ -180,8 +146,9 @@ const Dashboard = () => {
   }
 
   const getFullImageUrl = (path) => {
-    if (path.startsWith('http')) return path
-    return `${import.meta.env.VITE_API_URL}${path}`
+    if (!path) return ''
+    const baseUrl = import.meta.env.VITE_API_URL.replace('/api', '')
+    return path.startsWith('http') ? path : `${baseUrl}${path}`
   }
 
   const filteredSubmissions = submissions.filter(submission => {
@@ -190,7 +157,7 @@ const Dashboard = () => {
     const query = searchQuery.toLowerCase()
     return (
       submission.fullName.toLowerCase().includes(query) ||
-      submission.telegramUsername.toLowerCase().includes(query) ||
+      submission.phoneNumber.toLowerCase().includes(query) ||
       submission.pocketOptionId.toLowerCase().includes(query)
     )
   })
@@ -265,7 +232,7 @@ const Dashboard = () => {
               <input
                 type="text"
                 className="input-field pl-10"
-                placeholder="Search by name, telegram, or ID..."
+                placeholder="Search by name, phone, or ID..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -313,7 +280,7 @@ const Dashboard = () => {
                     Name
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Telegram
+                    Phone
                   </th>
                   <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Pocket Option ID
@@ -340,10 +307,7 @@ const Dashboard = () => {
                   <tr>
                     <td colSpan="8\" className="px-6 py-4 text-center">
                       <div className="flex justify-center">
-                        <svg className="animate-spin h-6 w-6 text-primary-500\" xmlns="http://www.w3.org/2000/svg\" fill="none\" viewBox="0 0 24 24">
-                          <circle className="opacity-25\" cx="12\" cy="12\" r="10\" stroke="currentColor\" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
+                        Loading...
                       </div>
                     </td>
                   </tr>
@@ -360,7 +324,7 @@ const Dashboard = () => {
                         <div className="text-sm font-medium text-gray-900">{submission.fullName}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-500">{submission.telegramUsername}</div>
+                        <div className="text-sm text-gray-500">{submission.phoneNumber}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-500">{submission.pocketOptionId}</div>
@@ -437,6 +401,7 @@ const Dashboard = () => {
               src={selectedImage}
               alt="Screenshot"
               className="w-full h-auto"
+              style={{ maxHeight: '80vh', objectFit: 'contain' }}
             />
           </div>
         </div>
